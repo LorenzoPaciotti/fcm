@@ -10,11 +10,11 @@ double epsilon = 0.001; //minima distanza per arrestare
 double miaDist[2]; //vettore delle distanze fra centroidi
 
 
-double *X[n]; //dati input  (d x n)
-double *U[n]; //partition matrix   (c x n)
-double *V[c]; //matr centroidi  (d x c)
+double X[d][n]; //dati input  (d x n)
+double U[c][n]; //partition matrix   (c x n)
+double V[d][c]; //matr centroidi  (d x c)
 
-void stampaMatrice(int righe, int col, double *mat[]) {
+void stampaMatrice(int righe, int col, double mat[][col]) {
     int i, j;
     printf("\n\n");
     for (i = 0; i < righe; i++) {
@@ -70,13 +70,13 @@ void prodottoScalareVettore(double scal, double vett_in[], double vett_out[]) {
     }
 }
 
-void ricalcCentroide(int i_ext, double *U[], double *X[], double *V[]) {
+void ricalcCentroide(int i_ext, double U[c][n], double X[d][n], double V[d][c]) {
 
     int j;
 
     for (j = 0; j < n; j++) {
         prodottoScalareVettore(pow(U[i_ext][j], m), X[j], V[i_ext]);
-        prodottoScalareVettore((1 / (pow(U[i_ext][j], m))), V[i_ext], V[i_ext]); //
+        prodottoScalareVettore((1 / (pow(U[i_ext][j], m))), V[i_ext], V[i_ext]); //!!!
     }
 }
 
@@ -101,9 +101,9 @@ int main(int argc, char** argv) {
     int i;
     int j;
     //alloc V ha dimensione dxc
-    for (i = 0; i < c; i++) {
+    /*for (i = 0; i < c; i++) {
         V[i] = malloc(sizeof (double)*d);
-    }
+    }*/
     //init V
     V[0][0] = 2.0;
     V[0][1] = 2.0;
@@ -111,28 +111,29 @@ int main(int argc, char** argv) {
     V[1][1] = 0.0;
 
     //alloc U ha dimensione cxn
-    for (i = 0; i < n; i++) {
+    /*for (i = 0; i < n; i++) {
         U[i] = malloc(sizeof (double)*c);
-    }
+    }*/
 
     //alloc X ha dimensione dxn
-    for (i = 0; i < n; i++) {
+    /*for (i = 0; i < n; i++) {
         X[i] = malloc(sizeof (double)*d);
-    }
+    }*/
     //init X
-    X[0][0] = 0.1;
-    X[0][1] = 0.9;
-    X[1][0] = 4.5;
-    X[1][1] = 7.4;
-    X[2][0] = 0.3;
-    X[2][1] = 200;
-    X[3][0] = 2000;
-    X[3][1] = 1111;
+    X[0][0] = 12;
+    X[0][1] = 12;
+    X[0][2] = 6;
+    X[0][3] = 6;
+    X[1][0] = 12;
+    X[1][1] = 12;
+    X[1][2] = 6;
+    X[1][3] = 6;
 
 
 
-
+    int contPassi=0;
     while (1) {
+        printf("\nPASSO: %d\n\n",++contPassi);
         for (i = 0; i < c; i++) {
             for (j = 0; j < n; j++) {
                 U[i][j] = calc_u_ij(X[j], V[i]);
@@ -145,13 +146,13 @@ int main(int argc, char** argv) {
         }
 
         puts("matrice X:");
-        stampaMatrice(n, d, X);
+        stampaMatrice(d, n, X);
         puts("");
         puts("matrice U:");
-        stampaMatrice(n, c, U);
+        stampaMatrice(c, n, U);
         puts("");
         puts("matrice V:");
-        stampaMatrice(c, d, V);
+        stampaMatrice(d, c, V);
         printf("\n\n\n\n\n");
 
         sleep(2);
