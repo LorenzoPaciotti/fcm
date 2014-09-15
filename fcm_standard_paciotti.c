@@ -7,7 +7,7 @@
 double m = 2.0; //fuzzification
 #define d 2 //dimensioni spaziali
 double epsilon = 0.001; //minima distanza per arrestare
-double miaDist[2]; //vettore delle distanze fra centroidi
+//double miaDist[2]; //vettore delle distanze fra centroidi
 
 
 double X[d][n]; //dati input  (d x n)
@@ -70,14 +70,18 @@ void prodottoScalareVettore(double scal, double vett_in[], double vett_out[]) {
     }
 }
 
-void ricalcCentroide(int i_ext, double U[c][n], double X[d][n], double V[d][c]) {
+void ricalcCentroidi(int i_ext, double U[c][n], double X[d][n], double V[d][c]) {
 
     int j;
 
-    for (j = 0; j < n; j++) {
+    for (j = 0; j < n; j++) {//NUMERATORE
         prodottoScalareVettore(pow(U[i_ext][j], m), X[j], V[i_ext]);
+    }
+
+    for (j = 0; j < n; j++) {//DENOMINATORE
         prodottoScalareVettore((1 / (pow(U[i_ext][j], m))), V[i_ext], V[i_ext]); //!!!
     }
+
 }
 
 double calc_u_ij(double x_j[], double v_i[]) {
@@ -86,9 +90,10 @@ double calc_u_ij(double x_j[], double v_i[]) {
 
     int k;
     for (k = 0; k < c; k++) {
-        denom += (dist_x_j__v_i / calcDistanza2D(x_j, V[k]));
+        denom += pow((dist_x_j__v_i / calcDistanza2D(x_j, V[k])), (2.0 / (m - 1.0)));
+        //denom = pow(denom, (2.0 / (m - 1.0))); //!!
     }
-    denom = pow(denom, (2.0 / (m - 1.0)));
+    
 
     return (1.0 / denom);
 }
@@ -100,25 +105,12 @@ int main(int argc, char** argv) {
      */
     int i;
     int j;
-    //alloc V ha dimensione dxc
-    /*for (i = 0; i < c; i++) {
-        V[i] = malloc(sizeof (double)*d);
-    }*/
+
     //init V
-    V[0][0] = 2.0;
-    V[0][1] = 2.0;
-    V[1][0] = 0.0;
-    V[1][1] = 0.0;
-
-    //alloc U ha dimensione cxn
-    /*for (i = 0; i < n; i++) {
-        U[i] = malloc(sizeof (double)*c);
-    }*/
-
-    //alloc X ha dimensione dxn
-    /*for (i = 0; i < n; i++) {
-        X[i] = malloc(sizeof (double)*d);
-    }*/
+    V[0][0] = 10.0;
+    V[0][1] = 20.0;
+    V[1][0] = 10.0;
+    V[1][1] = 20.0;
     //init X
     X[0][0] = 12;
     X[0][1] = 12;
@@ -130,10 +122,9 @@ int main(int argc, char** argv) {
     X[1][3] = 6;
 
 
-
-    int contPassi=0;
+    int contPassi = 0;
     while (1) {
-        printf("\nPASSO: %d\n\n",++contPassi);
+        printf("\nPASSO: %d\n\n", ++contPassi);
         for (i = 0; i < c; i++) {
             for (j = 0; j < n; j++) {
                 U[i][j] = calc_u_ij(X[j], V[i]);
@@ -142,7 +133,7 @@ int main(int argc, char** argv) {
 
 
         for (i = 0; i < c; i++) {
-            ricalcCentroide(i, U, X, V);
+            ricalcCentroidi(i, U, X, V);
         }
 
         puts("matrice X:");
