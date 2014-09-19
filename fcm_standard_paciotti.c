@@ -113,17 +113,19 @@ int main(int argc, char** argv) {
         //RICALCOLO POSIZIONE CENTROIDI
         int i, j, z, k;
         double old[d];
+        double denom;
         for (i = 0; i < c; i++) {
             for (z = 0; z < d; z++)
                 old[z] = V[i][z]; //per confronto diff
-            double num = 0.0;
             double denom = 0.0;
+            for(j=0; j<n;j++)//sommatoria denom
+                denom += pow(U[i][j], m);
             for (k = 0; k < d; k++) {
+                double num = 0.0;
                 for (j = 0; j < n; j++) {//SOMMATORIA 2 e 3
-                    denom += pow(U[i][j], m);
-                    V[i][k] = X[j][k] * pow(U[i][j], m);
+                    num += X[j][k] * pow(U[i][j], m);
                 }
-                V[i][k] = (V[i][k]) / denom;
+                V[i][k] = num / denom;
             }
             distanze[i] = pow(calcDistanza(V[i], old), 2.0);
         }
