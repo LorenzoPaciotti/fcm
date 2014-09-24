@@ -3,8 +3,8 @@
 #include <math.h>
 #include <unistd.h>
 #include <float.h>
-#define c 2 //numero di centri di cluster
-#define n 4 //numero di punti totale in input
+#define c 8 //numero di centri di cluster
+#define n 32 //numero di punti totale in input
 double m = 2.0; //fuzzification
 #define d 2 //dimensioni spaziali
 double epsilon = 0.001; //minima distanza per arrestare
@@ -65,28 +65,27 @@ int main(int argc, char** argv) {
     /*
      * INPUT: X, c, m
      * OUTPUT: U,V
-     */
-    int i;
-    int j;
-
-    srand48(3);
-
-    X[0][0] = 1.0;
-    X[0][1] = 2;
-    X[1][0] = 1.1;
-    X[1][1] = 2;
-    X[2][0] = 8.0;
-    X[2][1] = 4;
-    X[3][0] = 7.9;
-    X[3][1] = 4.1;
-
+     */  
+    int i,j;
+    //INIT X
+    srand48(time(0));
+    for (i = 0; i < n; i++)
+        for (j = 0; j < d; j++)
+            X[i][j] = 10 * drand48() + 1;
+    puts("matrice X:");
+        stampaMatrice(n, d, X);
+        puts("");
+    
+    sleep(1);
+    //INIT V
+    srand48(time(0));
     for (i = 0; i < c; i++)
         for (j = 0; j < d; j++)
             V[i][j] = 10 * drand48() - 5;
 
     puts("\ninizializzazione matrice V:");
     stampaMatrice(c, d, V);
-    puts("fine init V");
+    printf("#######################\n\n");
 
     int contPassi = 0;
     max = 0.0;
@@ -118,11 +117,11 @@ int main(int argc, char** argv) {
             for (z = 0; z < d; z++)
                 old[z] = V[i][z]; //per confronto diff
             double denom = 0.0;
-            for(j=0; j<n;j++)//sommatoria denom
+            for(j=0; j<n;j++)//sommatoria denom (fatta una sola volta a centr.)
                 denom += pow(U[i][j], m);
             for (k = 0; k < d; k++) {
                 double num = 0.0;
-                for (j = 0; j < n; j++) {//SOMMATORIA 2 e 3
+                for (j = 0; j < n; j++) {//SOMMATORIA numeratore
                     num += X[j][k] * pow(U[i][j], m);
                 }
                 V[i][k] = num / denom;
@@ -132,9 +131,7 @@ int main(int argc, char** argv) {
 
 
 
-        puts("matrice X:");
-        stampaMatrice(n, d, X);
-        puts("");
+        
         puts("matrice U:");
         stampaMatrice(c, n, U);
         puts("");
