@@ -5,18 +5,21 @@
 #include <float.h>
 #include <time.h>
 #define c 4 //numero di centri di cluster
-#define n 16 //numero di punti totale in input
+#define n 200 //numero di punti totale in input
 double m = 2.0; //fuzzification
-#define d 2 //dimensioni spaziali
+#define d 6 //dimensioni spaziali
 double epsilon = 0.001; //minima distanza per arrestare
 double distanze[c]; //vettore con le dist fra centroidi dopo l'aggiornamento
+
+int mi_gauss = 2;
+double sigma_gauss = 2.0;
 
 
 double X[n][d]; //dati input
 double U[c][n]; //partition matrix
 double V[c][d]; //matr centroidi
 double max;
-
+double coordXCentroidiAttese[c];
 void stampaMatrice(int righe, int col, double mat[][col]) {
     int i, j;
     printf("\n\n");
@@ -26,6 +29,17 @@ void stampaMatrice(int righe, int col, double mat[][col]) {
             printf(" ");
         }
         puts("");
+    }
+}
+
+void stampaMatriceSuFile(int righe, int col, double mat[righe][col], FILE *punt_file) {
+    int i, j;
+    for (i = 0; i < righe; i++) {
+        for (j = 0; j < col; j++) {
+            fprintf(punt_file, "%lf", mat[i][j]);
+            fprintf(punt_file, " ");
+        }
+        fprintf(punt_file, "\n");
     }
 }
 
@@ -62,22 +76,51 @@ double maxDistCentroidi() {
     return max;
 }
 
+double drand() /* distribuzione uniforme, (0..1] */ {
+    return (rand() + 1.0) / (RAND_MAX + 1.0);
+}
+
+double random_normal() {
+    /* distribuzione normale, centrata su 0, std dev 1 */
+    return sqrt(-2 * log(drand())) * cos(2 * M_PI * drand());
+}
+
 int main(int argc, char** argv) {
+    //PUNTATORI A FILE DI OUTPUT
+    FILE *out_V, *out_X, *out_U;
+    out_V = fopen("v.dat", "w");
+    out_X = fopen("x.dat", "w");
+    out_U = fopen("u.dat", "w");
     /*
      * INPUT: X, c, m
      * OUTPUT: U,V
      */  
     int i,j;
     //INIT X
-    srand48(2);
-    for (i = 0; i < n; i++)
+    
+    for (i = 0; i < n; i++) {
         for (j = 0; j < d; j++)
-            X[i][j] = 10 * drand48() + 1;
+            //gaussiana con media mi_gauss e devstd sigma_gauss
+            X[i][j] = mi_gauss + (sigma_gauss * random_normal());
+        if (i == 0)
+            coordXCentroidiAttese[0] = mi_gauss;
+        if (i == 50) {
+            mi_gauss *= 4;
+            coordXCentroidiAttese[1] = mi_gauss;
+        }
+        if (i == 100) {
+            mi_gauss *= 2;
+            coordXCentroidiAttese[2] = mi_gauss;
+        }
+        if (i == 150) {
+            mi_gauss *= 2;
+            coordXCentroidiAttese[3] = mi_gauss;
+        }
+    }
     puts("matrice X:");
         stampaMatrice(n, d, X);
         puts("");
     
-    sleep(1);
     //INIT V
     srand48(3);
     for (i = 0; i < c; i++)
@@ -116,7 +159,7 @@ int main(int argc, char** argv) {
         for (i = 0; i < c; i++) {
             for (z = 0; z < d; z++)
                 old[z] = V[i][z]; //per confronto diff
-            double denom = 0.0;
+            denom = 0.0;
             for(j=0; j<n;j++)//sommatoria denom (fatta una sola volta a centr.)
                 denom += pow(U[i][j], m);
             for (k = 0; k < d; k++) {
@@ -138,8 +181,11 @@ int main(int argc, char** argv) {
         puts("matrice V:");
         stampaMatrice(c, d, V);
         puts("");
+        stampaMatriceSuFile(c,d,V,out_V);
+        stampaMatriceSuFile(c,n,U,out_U);
+        stampaMatriceSuFile(n,d,X,out_X);
         printf("MAXDISTCENTROIDI: %lf", maxDistCentroidi());
         printf("\n\n\n\n\n");
-    } while (maxDistCentroidi() > epsilon); //
+    } while (maxDistCentroidi() > epsilon);
     return (0);
 }
